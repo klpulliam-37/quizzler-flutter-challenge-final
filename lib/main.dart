@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 //TODO: Step 2 - Import the rFlutter_Alert package here.
 import 'package:rflutter_alert/rflutter_alert.dart';
 import 'package:quizzler/quiz_brain.dart';
+import 'dart:async';
+import 'package:requests/requests.dart';
 
 QuizBrain quizBrain = QuizBrain();
 
@@ -25,15 +27,38 @@ class Quizzler extends StatelessWidget {
 }
 
 class QuizPage extends StatefulWidget {
+//   const QuizPage({
+//     this.future,
+//     this.builder
+// });
+
   @override
   _QuizPageState createState() => _QuizPageState();
 }
 
 class _QuizPageState extends State<QuizPage> {
+  Future questionText;
+  Future questionAnswer;
+
+  void initState() {
+    super.initState();
+    questionText = _getQuestion();
+  }
+
+  _getQuestion() async {
+    var r = await Requests.get('127.0.0.1:8888/question/');
+    // r.raiseForStatus();
+    dynamic questionBody = r.json();
+    // print(questionBody);
+    questionAnswer = questionBody["answer"];
+    return questionBody["question"];
+  }
+
   List<Icon> scoreKeeper = [];
+  //TODO: Implement loop to populate the QuizBank List.
 
   void checkAnswer(bool userPickedAnswer) {
-    bool correctAnswer = quizBrain.getCorrectAnswer();
+    dynamic correctAnswer = questionAnswer;
 
     setState(() {
       //TODO: Step 4 - Use IF/ELSE to check if we've reached the end of the quiz. If so,
@@ -88,7 +113,7 @@ class _QuizPageState extends State<QuizPage> {
             padding: EdgeInsets.all(10.0),
             child: Center(
               child: Text(
-                quizBrain.getQuestionText(),
+                questionText,
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontSize: 25.0,
